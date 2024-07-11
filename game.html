@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,26 +41,30 @@
         }
 
         .difficultyButton {
-        color: #fff; /* Бял текст за контраст */
-        padding: 10px 20px;
-        font-size: 16px;
-        border: none;
-        cursor: pointer;
+            color: #fff;
+            /* Бял текст за контраст */
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
         }
 
         #easyButton {
-            background-color: #449d48; /* Зелено за лесно */
+            background-color: #449d48;
+            /* Зелено за лесно */
         }
 
         #normalButton {
-            background-color: #3d8b40; /* По-тъмно зелено за нормално */
+            background-color: #3d8b40;
+            /* По-тъмно зелено за нормално */
         }
 
         #hardButton {
-            background-color: #357a38; /* Най-тъмно зелено за бързо */
+            background-color: #357a38;
+            /* Най-тъмно зелено за бързо */
         }
 
-            
+
 
         #gameArea {
             position: relative;
@@ -71,7 +76,8 @@
             background-color: #fff;
         }
 
-        #startScreen, #gameOverScreen {
+        #startScreen,
+        #gameOverScreen {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -94,7 +100,8 @@
             text-align: left;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             font-size: 2em;
             color: #333;
         }
@@ -129,22 +136,27 @@
         }
 
         .head {
-            background-color: #2ecc71; /* Green color for the snake head */
+            background-color: #2ecc71;
+            /* Green color for the snake head */
         }
 
-        #snakeBody1{
+        #snakeBody1 {
             background-color: #25a25a;
         }
-        #snakeBody2{
+
+        #snakeBody2 {
             background-color: #3498db;
         }
-        #snakeBody3{
+
+        #snakeBody3 {
             background-color: #9b59b6;
         }
-        #snakeBody4{
+
+        #snakeBody4 {
             background-color: #e91e63;
         }
-        #snakeBody5{
+
+        #snakeBody5 {
             background-color: #f39c12;
         }
 
@@ -167,6 +179,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="scoreBoard">
         <h2>Current Score: <span id="score">0</span></h2>
@@ -206,10 +219,11 @@
         <ul id="scoreList"></ul>
     </div>
 
-    <script src="game.js"></script>
+
+    <script type="text/javascript" async="" src="game.js"></script>
     <script>
-        let headColor = '#2ecc71'; // Default head color
-        let bodyColors = ['#25a25a', '#3498db', '#9b59b6', '#e91e63', '#f39c12']; // Default body colors
+         headColor = '#2ecc71'; // Default head color
+         bodyColors = ['#25a25a', '#3498db', '#9b59b6', '#e91e63', '#f39c12']; // Default body colors
 
         function initializeSnakeColors() {
             const snakeHead = document.getElementById('snakeHead');
@@ -223,8 +237,8 @@
         }
 
         // Event listener for color selection
-        const colorInput = document.getElementById('color');
-        colorInput.addEventListener('input', function() {
+        colorInput = document.getElementById('color');
+        colorInput.addEventListener('input', function () {
             const color = colorInput.value;
             const hexInput = document.getElementById('hex');
             hexInput.value = color;
@@ -233,8 +247,9 @@
         // Event listener for clicking on snake parts
         const snakeVisualizationParts = document.querySelectorAll('#snakeVisualization .snake-part');
         snakeVisualizationParts.forEach((part, index) => {
-            part.addEventListener('click', function() {
-                const color = prompt(`Enter color for part ${index + 1}:`, this.style.backgroundColor);
+            part.addEventListener('click', function () {
+                //const color = prompt(`Enter color for part ${index + 1}:`, this.style.backgroundColor);
+                color = document.getElementById('hex').value;
                 if (color !== null) {
                     this.style.backgroundColor = color;
                     if (index === 0) {
@@ -288,4 +303,5 @@
         initializeSnakeColors();
     </script>
 </body>
+
 </html>

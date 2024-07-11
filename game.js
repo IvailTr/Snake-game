@@ -22,6 +22,7 @@ let highScores = [];
 let gameLoopInterval;
 let headColor = '#2ecc71'; // Default head color
 let bodyColors = ['#25a25a', '#3498db', '#9b59b6', '#e91e63', '#f39c12']; // Default body colors
+var gameRunning = false;
 
 // Event listeners
 startButton.addEventListener('click', startGame);
@@ -51,7 +52,7 @@ function startGame() {
     dx = GRID_SIZE;
     dy = 0;
     food = generateFoodPosition();
-
+    generateLake();
     // Стартираме таймерите за златната и черната храна
     startGoldenFoodTimer();
     startBlackFoodTimer();
@@ -62,8 +63,6 @@ function startGame() {
     // Стартираме основната игрова функция
     main();
 }
-
-
 
 function initializeGame(headColor, bodyColors) {
     snake = [
@@ -79,10 +78,9 @@ function initializeGame(headColor, bodyColors) {
     dx = GRID_SIZE;
     dy = 0;
     changingDirection = false;
-    generateFood();
+    // generateFood();
+    generateLake();
 }
-
-
 
 function applySnakeColors() {
     const snakeHead = document.getElementById('snakeHead');
@@ -98,7 +96,7 @@ function initializeSnake() {
     // Определяне на главата на змията
     const snakeHead = document.getElementById('snakeHead');
     snakeHead.style.backgroundColor = headColor;
-    
+
     // Определяне на тялото на змията
     const snakeParts = document.querySelectorAll('.snake-part.body');
     snakeParts.forEach((part, index) => {
@@ -113,11 +111,55 @@ function updateSnakeColors() {
 /*-------------------*/
 let gameSpeed = 100; // Стандартна скорост (нормална)
 
+const LAKE_COLOR = '#3498db';
+let lake = [];
 
+// Функция за генериране на езерото
+function generateLake() {
+    const lakeSize = Math.floor(Math.random() * 12) + 3; // Размер на езерото от 3 до 7 квадратчета
+    let startX = Math.floor(Math.random() * GRID_COUNT) * GRID_SIZE;
+    let startY = Math.floor(Math.random() * GRID_COUNT) * GRID_SIZE;
 
+    lake = [{ x: startX, y: startY }];
 
+    while (lake.length < lakeSize) {
+        let direction = Math.floor(Math.random() * 4); // 0 = left, 1 = up, 2 = right, 3 = down
+        let lastSquare = lake[lake.length - 1];
+        let newSquare;
 
+        switch (direction) {
+            case 0: // left
+                newSquare = { x: lastSquare.x - GRID_SIZE, y: lastSquare.y };
+                break;
+            case 1: // up
+                newSquare = { x: lastSquare.x, y: lastSquare.y - GRID_SIZE };
+                break;
+            case 2: // right
+                newSquare = { x: lastSquare.x + GRID_SIZE, y: lastSquare.y };
+                break;
+            case 3: // down
+                newSquare = { x: lastSquare.x, y: lastSquare.y + GRID_SIZE };
+                break;
+        }
 
+        // Проверка дали новото квадратче е в рамките на картата и не е вече част от езерото
+        if (newSquare.x >= 0 && newSquare.x < CANVAS_SIZE &&
+            newSquare.y >= 0 && newSquare.y < CANVAS_SIZE &&
+            !lake.some(square => square.x === newSquare.x && square.y === newSquare.y)) {
+            lake.push(newSquare);
+        }
+    }
+}
+
+// Функция за рисуване на езерото
+function drawLake() {
+    ctx.fillStyle = LAKE_COLOR;
+    ctx.strokeStyle = '#000';
+    lake.forEach(square => {
+        ctx.fillRect(square.x, square.y, GRID_SIZE, GRID_SIZE);
+        ctx.strokeRect(square.x, square.y, GRID_SIZE, GRID_SIZE);
+    });
+}
 
 // Main game loop
 function main() {
@@ -130,7 +172,9 @@ function main() {
         setTimeout(function onTick() {
             clearCanvas();
             drawGrid();
+            drawLake(); // Ако има функция за рисуване на езерото
             moveSnake();
+           
             if (checkFoodCollision()) {
                 growSnake();
                 score += 10;
@@ -144,16 +188,211 @@ function main() {
             if (blackFoodIndex !== -1) {
                 eatBlackFood(blackFoodIndex);
             }
+            if (checkOrangeFoodCollision()) {
+                eatOrangeFood(); // Изядете оранжевото хранително вещество
+            }
             drawSnake();
             drawFood();
+            drawOrangeFood(); // Рисуване на оранжевото хранително вещество
             if (goldenFoodActive) {
                 drawGoldenFood();
             }
             drawBlackFoods();
             main();
-        }, gameSpeed);/*100*/
+        }, gameSpeed);
+
+        setTimeout(function onTick() {
+            moveOrangeFood(); // Движение на оранжевото хранително вещество
+        }, (gameSpeed + 21));
     }
 }
+
+const ORANGE_FOOD_COLOR = '#e67e22';
+let orangeFood = { x: 0, y: 0, dx: GRID_SIZE, dy: 0 };
+
+function generateOrangeFoodPosition() {
+    orangeFood.x = Math.floor(Math.random() * GRID_COUNT) * GRID_SIZE;
+    orangeFood.y = Math.floor(Math.random() * GRID_COUNT) * GRID_SIZE;
+    orangeFood.dx = GRID_SIZE; // Начална посока на движение надясно
+    orangeFood.dy = 0;
+}
+
+function moveOrangeFood() {
+    // Движение на оранжевото квадратче
+    orangeFood.x += orangeFood.dx;
+    orangeFood.y += orangeFood.dy;
+
+    // Проверка за сблъсък със стените и промяна на посоката
+    if (orangeFood.x < 0) {
+        orangeFood.x = 0;
+        orangeFood.dx = GRID_SIZE;
+        orangeFood.dy = 0;
+    } else if (orangeFood.x >= CANVAS_SIZE) {
+        orangeFood.x = CANVAS_SIZE - GRID_SIZE;
+        orangeFood.dx = -GRID_SIZE;
+        orangeFood.dy = 0;
+    } else if (orangeFood.y < 0) {
+        orangeFood.y = 0;
+        orangeFood.dx = 0;
+        orangeFood.dy = GRID_SIZE;
+    } else if (orangeFood.y >= CANVAS_SIZE) {
+        orangeFood.y = CANVAS_SIZE - GRID_SIZE;
+        orangeFood.dx = 0;
+        orangeFood.dy = -GRID_SIZE;
+    }
+}
+
+function drawOrangeFood() {
+    ctx.fillStyle = ORANGE_FOOD_COLOR;
+    ctx.strokeStyle = '#000';
+    ctx.fillRect(orangeFood.x, orangeFood.y, GRID_SIZE, GRID_SIZE);
+    ctx.strokeRect(orangeFood.x, orangeFood.y, GRID_SIZE, GRID_SIZE);
+}
+
+function checkOrangeFoodCollision() {
+    if (snake[0].x === orangeFood.x || snake[0].y === orangeFood.y) {
+        console.log(snake[0].x + '===' + orangeFood.x + '&&' + snake[0].y + '===' + orangeFood.y);
+    }
+    if (snake[0].x === orangeFood.x && snake[0].y === orangeFood.y) {
+        console.log('111');
+        return true;
+    }
+    return false;
+}
+
+function eatOrangeFood() {
+    console.log('lenght: ' + snake.length);
+    if (snake.length > 1) {
+        snake.pop(); // Премахване на последния елемент от тялото на змията
+    } else {
+        console.log('йййй');
+    }
+    generateOrangeFoodPosition(); // Генериране на нова позиция за оранжевото квадратче
+}
+
+// Начална позиция на оранжевото квадратче
+generateOrangeFoodPosition();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Main game loop
+// function main() {
+//     if (gameOver()) {
+//         endGame();
+//         return;
+//     }
+
+//     if (gameRunning) {
+//         setTimeout(function onTick() {
+//             clearCanvas();
+//             drawGrid();
+//             drawLake(); // Добавяме рисуване на езерото
+//             moveSnake();
+//             moveOrangeFood(); // Движение на оранжевото квадратче
+//             if (checkFoodCollision()) {
+//                 growSnake();
+//                 score += 10;
+//                 scoreSpan.textContent = score;
+//                 food = generateFoodPosition();
+//             }
+//             if (checkGoldenFoodCollision()) {
+//                 eatGoldenFood();
+//             }
+//             const blackFoodIndex = checkBlackFoodCollision();
+//             if (blackFoodIndex !== -1) {
+//                 eatBlackFood(blackFoodIndex);
+//             }
+//             drawSnake();
+//             drawFood();
+//              drawOrangeFood();
+//             if (goldenFoodActive) {
+//                 drawGoldenFood();
+//             }
+//             drawBlackFoods();
+//             main();
+//         }, gameSpeed);
+//     }
+// }
+
+// const ORANGE_FOOD_COLOR = '#e67e22';
+// let orangeFood = { x: 0, y: 0, dx: GRID_SIZE, dy: 0 };
+
+// function generateOrangeFoodPosition() {
+//     orangeFood.x = Math.floor(Math.random() * GRID_COUNT) * GRID_SIZE;
+//     orangeFood.y = Math.floor(Math.random() * GRID_COUNT) * GRID_SIZE;
+//     orangeFood.dx = GRID_SIZE; // Начална посока на движение надясно
+//     orangeFood.dy = 0;
+// }
+
+// function moveOrangeFood() {
+//     // Движение на оранжевото квадратче
+//     orangeFood.x += orangeFood.dx;
+//     orangeFood.y += orangeFood.dy;
+
+//     // Проверка за сблъсък със стените и промяна на посоката
+//     if (orangeFood.x < 0) {
+//         orangeFood.x = 0;
+//         orangeFood.dx = GRID_SIZE;
+//         orangeFood.dy = 0;
+//     } else if (orangeFood.x >= CANVAS_SIZE) {
+//         orangeFood.x = CANVAS_SIZE - GRID_SIZE;
+//         orangeFood.dx = -GRID_SIZE;
+//         orangeFood.dy = 0;
+//     } else if (orangeFood.y < 0) {
+//         orangeFood.y = 0;
+//         orangeFood.dx = 0;
+//         orangeFood.dy = GRID_SIZE;
+//     } else if (orangeFood.y >= CANVAS_SIZE) {
+//         orangeFood.y = CANVAS_SIZE - GRID_SIZE;
+//         orangeFood.dx = 0;
+//         orangeFood.dy = -GRID_SIZE;
+//     }
+// }
+
+// function drawOrangeFood() {
+//     ctx.fillStyle = ORANGE_FOOD_COLOR;
+//     ctx.strokeStyle = '#000';
+//     ctx.fillRect(orangeFood.x, orangeFood.y, GRID_SIZE, GRID_SIZE);
+//     ctx.strokeRect(orangeFood.x, orangeFood.y, GRID_SIZE, GRID_SIZE);
+// }
+
+// function checkOrangeFoodCollision() {
+//     if (snake[0].x === orangeFood.x && snake[0].y === orangeFood.y) {
+//         return true;
+//     }
+//     return false;
+// }
+
+// function eatOrangeFood() {
+//     if (snake.length > 1) {
+//         snake.pop(); // Премахване на последния елемент от тялото на змията
+//     }
+//     generateOrangeFoodPosition(); // Генериране на нова позиция за оранжевото квадратче
+// }
+
+// // Начална позиция на оранжевото квадратче
+// generateOrangeFoodPosition();
+
+/*--------------*/
+
+
+
 function setGameSpeed(speed) {
     switch (speed) {
         case 'slow':
@@ -273,11 +512,16 @@ function gameOver() {
         snake[0].x >= CANVAS_SIZE ||
         snake[0].y < 0 ||
         snake[0].y >= CANVAS_SIZE ||
-        checkCollision()
+        checkCollision() ||
+        checkLakeCollision() // Добавяме проверка за сблъсък с езерото
     ) {
         return true;
     }
     return false;
+}
+// Функция за проверка за сблъсък с езерото
+function checkLakeCollision() {
+    return lake.some(square => square.x === snake[0].x && square.y === snake[0].y);
 }
 
 // Function to end the game
@@ -484,7 +728,7 @@ function getRandomInterval(min, max) {
 // Event listener for selecting colors
 const colorSelectors = document.querySelectorAll('.color-selector');
 colorSelectors.forEach(selector => {
-    selector.addEventListener('click', function() {
+    selector.addEventListener('click', function () {
         const partType = this.getAttribute('data-part');
         const color = prompt(`Enter color for ${partType}:`, '#ffffff');
         this.style.backgroundColor = color;
@@ -519,7 +763,7 @@ function drawSnakePart(snakePart, color) {
 let colorInput = document.querySelector('#color');
 let hexInput = document.querySelector('#hex');
 
-colorInput.addEventListener('input', () =>{
+colorInput.addEventListener('input', () => {
     let color = colorInput.value;
     hexInput.value = color;
     // document.body.style.backgroundColor = color;
@@ -527,14 +771,14 @@ colorInput.addEventListener('input', () =>{
     document.querySelector('h1').style.color = color;
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     let colorInput = document.querySelector('#color');
     let hexInput = document.querySelector('#hex');
     let snakeSquares = document.querySelectorAll('.snake-part');
 
     // Добавяне на слушател за клик на квадратчетата на змията
     snakeSquares.forEach(square => {
-        square.addEventListener('click', function() {
+        square.addEventListener('click', function () {
             let color = colorInput.value;
             let hexColor = rgbToHex(getComputedStyle(square).backgroundColor); // Получаваме HEX цвят от стиловете на квадратчето
             square.style.backgroundColor = color; // Задаваме новия цвят на квадратчето
@@ -552,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Добавяне на слушател за събитие за въвеждане на цвета
-    colorInput.addEventListener('input', function() {
+    colorInput.addEventListener('input', function () {
         let color = colorInput.value;
         hexInput.value = color;
     });
