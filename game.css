@@ -1,0 +1,137 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+#gameArea {
+    position: relative;
+    text-align: center;
+}
+
+#gameCanvas {
+    border: 1px solid #000;
+    background-color: #fff;
+}
+
+#startScreen, #gameOverScreen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#scoreBoard {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+#highScores {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #fff;
+    border: 1px solid #000;
+    padding: 10px;
+    text-align: left;
+}
+
+h1, h2 {
+    font-size: 2em;
+    color: #333;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    font-size: 1.5em;
+    margin: 5px 0;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+#snakeVisualization {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.snake-part {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #000;
+}
+
+.head {
+    background-color: #fff;
+}
+
+.body {
+    background-color: #2ecc71;
+}
+
+
+
+
+
+#snakeVisualization {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.snake-part {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #000;
+}
+
+.head {
+    background-color: #2ecc71; /* Зелен цвят за главата на змията */
+}
+
+.body {
+    background-color: #27ae60; /* Зелен цвят за тялото на змията */
+}
+
+#snakeColorSelection {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.snake-part {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #000;
+    cursor: pointer;
+}
+
+.head {
+    background-color: #2ecc71; /* Зелен цвят за главата на змията */
+}
+
+.body {
+    background-color: #27ae60; /* Зелен цвят за тялото на змията */
+}
+
+.color-selector {
+    margin: 0 5px;
+}
+
+.selected {
+    border: 3px solid yellow;
+}

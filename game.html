@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .button-container {
+            position: fixed;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            z-index: 100;
+        }
+
+        button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .difficultyButton {
+        color: #fff; /* Бял текст за контраст */
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        }
+
+        #easyButton {
+            background-color: #449d48; /* Зелено за лесно */
+        }
+
+        #normalButton {
+            background-color: #3d8b40; /* По-тъмно зелено за нормално */
+        }
+
+        #hardButton {
+            background-color: #357a38; /* Най-тъмно зелено за бързо */
+        }
+
+            
+
+        #gameArea {
+            position: relative;
+            text-align: center;
+        }
+
+        #gameCanvas {
+            border: 1px solid #000;
+            background-color: #fff;
+        }
+
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #scoreBoard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        #highScores {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #fff;
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: left;
+        }
+
+        h1, h2 {
+            font-size: 2em;
+            color: #333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            font-size: 1.5em;
+            margin: 5px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        #snakeVisualization {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .snake-part {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #000;
+        }
+
+        .head {
+            background-color: #2ecc71; /* Green color for the snake head */
+        }
+
+        #snakeBody1{
+            background-color: #25a25a;
+        }
+        #snakeBody2{
+            background-color: #3498db;
+        }
+        #snakeBody3{
+            background-color: #9b59b6;
+        }
+        #snakeBody4{
+            background-color: #e91e63;
+        }
+        #snakeBody5{
+            background-color: #f39c12;
+        }
+
+        #snakeColorSelection {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .snake-part.color-selector {
+            cursor: pointer;
+        }
+
+        .color-selector {
+            margin: 0 5px;
+        }
+
+        .selected {
+            border: 3px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    <div id="scoreBoard">
+        <h2>Current Score: <span id="score">0</span></h2>
+    </div>
+    <div id="gameArea">
+        <div id="startScreen">
+            <h1>Snake Game</h1>
+            <div id="snakeVisualization">
+                <div class="snake-part head" id="snakeHead"></div>
+                <div class="snake-part body" id="snakeBody1"></div>
+                <div class="snake-part body" id="snakeBody2"></div>
+                <div class="snake-part body" id="snakeBody3"></div>
+                <div class="snake-part body" id="snakeBody4"></div>
+                <div class="snake-part body" id="snakeBody5"></div>
+            </div>
+            <button id="startButton">Start Game</button>
+            <div id="colorPickerContainer" style="margin-top: 20px;">
+                <input type="text" id="hex" readonly style="font-size: 25px;">
+                <input type="color" id="color" style="width: 100px; height: 50px;">
+            </div>
+        </div>
+        <canvas id="gameCanvas" width="800" height="800" style="display: none;"></canvas>
+        <div class="button-container">
+            <button id="easyButton" class="difficultyButton easy" onclick="setGameSpeed('slow')">Бавно</button>
+            <button id="normalButton" class="difficultyButton normal" onclick="setGameSpeed('normal')">Нормално</button>
+            <button id="hardButton" class="difficultyButton hard" onclick="setGameSpeed('fast')">Бързо</button>
+
+
+        </div>
+        <div id="gameOverScreen" style="display: none;">
+            <h1 style="color: rgb(161, 10, 10);">Game Over</h1>
+            <button id="restartButton">New Game</button>
+        </div>
+    </div>
+    <div id="highScores">
+        <h2>High Scores</h2>
+        <ul id="scoreList"></ul>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+        let headColor = '#2ecc71'; // Default head color
+        let bodyColors = ['#25a25a', '#3498db', '#9b59b6', '#e91e63', '#f39c12']; // Default body colors
+
+        function initializeSnakeColors() {
+            const snakeHead = document.getElementById('snakeHead');
+            snakeHead.style.backgroundColor = headColor;
+
+            const snakeParts = document.querySelectorAll('.snake-part.body');
+            snakeParts.forEach((part, index) => {
+                const colorIndex = index % bodyColors.length;
+                part.style.backgroundColor = bodyColors[colorIndex];
+            });
+        }
+
+        // Event listener for color selection
+        const colorInput = document.getElementById('color');
+        colorInput.addEventListener('input', function() {
+            const color = colorInput.value;
+            const hexInput = document.getElementById('hex');
+            hexInput.value = color;
+        });
+
+        // Event listener for clicking on snake parts
+        const snakeVisualizationParts = document.querySelectorAll('#snakeVisualization .snake-part');
+        snakeVisualizationParts.forEach((part, index) => {
+            part.addEventListener('click', function() {
+                const color = prompt(`Enter color for part ${index + 1}:`, this.style.backgroundColor);
+                if (color !== null) {
+                    this.style.backgroundColor = color;
+                    if (index === 0) {
+                        headColor = color;
+                    } else {
+                        bodyColors[index - 1] = color;
+                    }
+                    initializeSnakeColors(); // Reinitialize all snake parts with the new colors
+                }
+            });
+        });
+
+        // Function to start the game
+        function startGame() {
+            const startScreen = document.getElementById('startScreen');
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            const canvas = document.getElementById('gameCanvas');
+            const scoreBoard = document.getElementById('scoreBoard');
+            const snakeVisualization = document.getElementById('snakeVisualization');
+
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            canvas.style.display = 'block';
+            scoreBoard.style.display = 'block';
+            snakeVisualization.style.display = 'none'; // Hide snake visualization during game
+
+            // Apply custom snake colors when starting the game
+            applySnakeColors();
+            initializeGame(headColor, bodyColors); // Initialize snake with custom colors
+            main();
+        }
+
+        // Function to apply snake colors to the game
+        function applySnakeColors() {
+            const snakeHead = document.getElementById('snakeHead');
+            snakeHead.style.backgroundColor = headColor;
+
+            const snakeBodyParts = document.querySelectorAll('.snake-part.body');
+            snakeBodyParts.forEach((part, index) => {
+                part.style.backgroundColor = bodyColors[index % bodyColors.length];
+            });
+        }
+
+        // Event listeners for starting and restarting the game
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        // Initial snake colors on page load
+        initializeSnakeColors();
+    </script>
+</body>
+</html>
